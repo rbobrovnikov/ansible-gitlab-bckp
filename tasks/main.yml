@@ -1,0 +1,73 @@
+---
+
+- block:
+   - name: Create none default app backup dir 
+     file:
+      path: "{{ gitlab_conf_bckp_path_app }}"
+      state: directory
+      owner: "{{ gitlab_app_bckp_user }}" 
+      group: "{{ gitlab_app_bckp_group }}" 
+      mode: "{{ gitlab_app_bckp_mode }}"
+
+   - name: Change default app backup dir in gitlab.rb
+     replace:
+      dest: "/{{ gitlab_etc_path }}/gitlab.rb"
+      regexp: "^# gitlab_rails\\['backup_path'\\] = \"/var/opt/gitlab/backups\""
+      replace: "gitlab_rails['backup_path'] = \"{{ gitlab_conf_bckp_path_app }}\""
+      backup: yes
+     notify: 
+      - gitlab reconfig
+  when: not gitlab_conf_bckp_path_app_default
+
+- name: Verify app backup path
+  file:  
+   path: "{{ gitlab_bckp_path_app }}"
+   state: directory
+   owner: "{{ gitlab_app_bckp_user }}"
+   group: "{{ gitlab_app_bckp_group }}"
+   mode: "{{ gitlab_app_bckp_mode }}"
+    
+- name: Verify etc backup path
+  file:
+   path: "{{ gitlab_bckp_path_etc }}"
+   state: directory
+   owner: "{{ gitlab_etc_bckp_user }}"
+   group: "{{ gitlab_etc_bckp_group }}"
+   mode: "{{ gitlab_etc_bckp_mode }}"
+
+- name: Copy backup script to host
+  template:
+   src: gitlab-bckp/templates/{{ gitlab_bckp_script }}.j2
+   dest: "{{ gitlab_bckp_script_path }}/{{ gitlab_bckp_script }}"
+   owner: root
+   group: root
+   mode: 0700
+
+- name: Install gitlab backup script into cron
+  cron:
+   name: "backup gitlab data"
+   minute: "{{ gitlab_cron_time.minute }}"
+   hour: "{{ gitlab_cron_time.hour }}"
+   weekday: "{{ gitlab_cron_time.weekday }}"
+   job: "{{ gitlab_bckp_script_path }}/{{ gitlab_bckp_script }}"
+
+- name: Edit gitlab.rb with local backup_upload
+  lineinfile:
+   dest: "/{{ gitlab_etc_path }}/gitlab.rb"
+   line: "gitlab_rails['backup_upload_connection'] = {
+           :provider => 'Local',
+           :local_root => '{{ gitlab_bckp_path_app }}'
+           }"
+   insertafter: "^# gitlab_rails\\['backup_keep_time'\\]"
+   state: present
+  notify:
+      - gitlab reconfig
+
+- name: Edit gitlab.rb with local backup_upload_remote_directory
+  lineinfile:
+   dest: "/{{ gitlab_etc_path }}/gitlab.rb"
+   line: "gitlab_rails['backup_upload_remote_directory'] = '.'"
+   insertafter: "{{ gitlab_bckp_path_app }}"
+   state: present
+  notify:
+      - gitlab reconfig

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+#Remove old etc backups
+#Alternate way to remove app backups. Add this paths: {{ gitlab_conf_bckp_path_app }} {{ gitlab_bckp_path_app }}
+find {{ gitlab_bckp_path_etc }} -type f -mtime {{ gitlab_bckp_age }} -exec rm '{}' ';'
+
+#Backup /etc/gitlab dir
+umask 0077
+
+tar cfz {{ gitlab_bckp_path_etc }}/$(date "+etc-gitlab-%F.tar.gz") -C / {{ gitlab_etc_path }} 
+
+{% if gitlab_inst_omnibus %}
+#Backup app data if gitlab installed from omnibus package
+{{ gitlab_bckp_shell_command_omni }}
+{% else %}
+#Backup app data if gitlab installed from source 
+{{ gitlab_bckp_shell_command_src }}
+{% endif %}
+
+#Copy app data backup to /mnt/'hostname' dir
+#cp {{ gitlab_conf_bckp_path_app }}/$(date "+etc-gitlab-%F.tar.gz") {{ gitlab_bckp_path_app }}

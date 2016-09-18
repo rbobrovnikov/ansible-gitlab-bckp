@@ -1,0 +1,35 @@
+---
+
+gitlab_inst_omnibus: true 
+
+gitlab_bckp_hostname: localhost
+
+gitlab_etc_path: etc/gitlab
+
+gitlab_conf_bckp_path_app_default: true 
+gitlab_conf_bckp_path_app: "/var/opt/gitlab/backups"
+
+gitlab_bckp_path_app: /mnt/{{ gitlab_bckp_hostname }}/backups/gitlab
+gitlab_bckp_path_etc: /mnt/{{ gitlab_bckp_hostname }}/backups/gitlab_etc
+gitlab_bckp_age: "7"
+
+gitlab_etc_bckp_user: root
+gitlab_etc_bckp_group: root
+gitlab_etc_bckp_mode: 0750
+
+gitlab_app_bckp_user: git 
+gitlab_app_bckp_group: root
+gitlab_app_bckp_mode: 0750
+
+gitlab_cron_time:
+  minute: "0"
+  hour: "3"
+  weekday: "*"
+
+#Available options - db, uploads (attachments), repositories, builds(CI build output logs), artifacts (CI build artifacts), lfs (LFS objects)
+gitlab_bckp_skip: []
+
+gitlab_bckp_shell_command_omni: 'gitlab-rake gitlab:backup:create CRON=1'
+gitlab_bckp_shell_command_src: 'rake gitlab:backup:create RAILS_ENV=production'
+gitlab_bckp_script: gitlab_bckp.sh
+gitlab_bckp_script_path: /usr/local/bin
