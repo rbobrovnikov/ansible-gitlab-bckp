@@ -37,7 +37,7 @@
 
 - name: Copy backup script to host
   template:
-   src: gitlab-bckp/templates/{{ gitlab_bckp_script }}.j2
+   src: "{{ gitlab_bckp_script }}.j2"
    dest: "{{ gitlab_bckp_script_path }}/{{ gitlab_bckp_script }}"
    owner: root
    group: root

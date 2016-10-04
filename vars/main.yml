@@ -2,15 +2,15 @@
 
 gitlab_inst_omnibus: true 
 
-gitlab_bckp_hostname: localhost
+gitlab_bckp_hostname: "{{ inventory_hostname }}" 
 
 gitlab_etc_path: etc/gitlab
 
 gitlab_conf_bckp_path_app_default: true 
 gitlab_conf_bckp_path_app: "/var/opt/gitlab/backups"
 
-gitlab_bckp_path_app: /mnt/{{ gitlab_bckp_hostname }}/backups/gitlab
-gitlab_bckp_path_etc: /mnt/{{ gitlab_bckp_hostname }}/backups/gitlab_etc
+gitlab_bckp_path_app: /mnt/backups/{{ gitlab_bckp_hostname }}/gitlab
+gitlab_bckp_path_etc: /mnt/backups/{{ gitlab_bckp_hostname }}/gitlab/etc
 gitlab_bckp_age: "7"
 
 gitlab_etc_bckp_user: root
